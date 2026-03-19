@@ -1,4 +1,4 @@
-const { app, BrowserWindow, systemPreferences, session } = require('electron');
+const { app, BrowserWindow, systemPreferences, session, shell } = require('electron');
 const path = require('path');
 
 const APP_URL = 'https://meet.quillon.ru';
@@ -6,6 +6,8 @@ const APP_URL = 'https://meet.quillon.ru';
 let mainWindow;
 
 function createWindow() {
+  const isMac = process.platform === 'darwin';
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -14,32 +16,45 @@ function createWindow() {
     title: 'Quillon Meet',
     icon: path.join(__dirname, 'icon.png'),
     backgroundColor: '#080B14',
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 16 },
+    // macOS: hidden title bar with inset traffic lights, pushed right
+    // to avoid overlapping page content
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
+    trafficLightPosition: isMac ? { x: 12, y: 12 } : undefined,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      // Enable media features
       webSecurity: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
     show: false,
   });
 
+  // Inject CSS to add left padding on macOS for traffic lights
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (isMac) {
+      mainWindow.webContents.insertCSS(`
+        /* Push page content right so traffic lights don't overlap */
+        body { -webkit-app-region: drag; }
+        input, button, select, textarea, a, [role="button"] { -webkit-app-region: no-drag; }
+      `);
+    }
+  });
+
   // Grant camera/microphone/screen permissions automatically
-  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
     const allowed = [
       'media',
       'mediaKeySystem',
       'clipboard-read',
       'clipboard-sanitized-write',
       'notifications',
+      'display-capture',
     ];
     callback(allowed.includes(permission));
   });
 
   // Handle display-capture for screen sharing
-  session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
-    // Allow screen share without picker for simplicity, or use desktopCapturer
+  session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
     callback({ video: true });
   });
 
@@ -50,13 +65,24 @@ function createWindow() {
     mainWindow.show();
   });
 
-  // Open external links in browser
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+  // Navigation handling: keep meet.quillon.ru links inside the app,
+  // open everything else in the default browser
+  mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(APP_URL)) {
-      require('electron').shell.openExternal(url);
-      return { action: 'deny' };
+      event.preventDefault();
+      shell.openExternal(url);
     }
-    return { action: 'allow' };
+    // meet.quillon.ru links navigate inside the app (default behavior)
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith(APP_URL)) {
+      // Navigate in the same window instead of opening a new one
+      mainWindow.loadURL(url);
+    } else {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
   });
 
   mainWindow.on('closed', () => {
@@ -96,12 +122,11 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Handle deep links
+// Handle deep links: quillonmeet://room/xxx
 app.setAsDefaultProtocolClient('quillonmeet');
 
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  // quillonmeet://room/xxx -> https://meet.quillon.ru/room/xxx
   const roomPath = url.replace('quillonmeet://', '');
   if (mainWindow) {
     mainWindow.loadURL(`${APP_URL}/${roomPath}`);
