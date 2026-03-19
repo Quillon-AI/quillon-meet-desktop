@@ -1,0 +1,65 @@
+{
+  "name": "quillon-meet",
+  "version": "1.0.0",
+  "description": "Quillon Meet — video conferencing desktop app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win"
+  },
+  "author": "Quillon AI",
+  "license": "MIT",
+  "type": "commonjs",
+  "build": {
+    "appId": "ru.quillon.meet",
+    "productName": "Quillon Meet",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "icon.png"
+    ],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "icon": "icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
+      ],
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "icon": "icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "protocols": [
+      {
+        "name": "Quillon Meet",
+        "schemes": ["quillonmeet"]
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1"
+  }
+}
