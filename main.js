@@ -30,28 +30,13 @@ function createWindow() {
   const injectCSS = () => {
     if (!isMac || !mainWindow) return;
     mainWindow.webContents.insertCSS(`
-      /* === Electron macOS: traffic light padding === */
-      /* Welcome/Prejoin pages: push logo right */
-      [class*="logo"] {
-        margin-left: 64px !important;
-      }
-      /* Call screen topbar: push left content right */
-      [class*="topbar"] {
-        padding-left: 74px !important;
-      }
-      /* Make titlebar area draggable */
-      [class*="topbar"],
-      [class*="logo"] {
-        -webkit-app-region: drag;
-      }
-      /* Exclude interactive elements from drag */
-      button, a, input, select, textarea,
-      [class*="Btn"], [class*="btn"], [class*="toggle"],
-      [class*="Invite"], [class*="invite"],
-      [class*="input"], [class*="select"] {
-        -webkit-app-region: no-drag;
-      }
+      /* Electron macOS: safe area for traffic lights */
+      :root { --electron-traffic-light: 72px; }
     `).catch(() => {});
+    // Also set a flag so the web app knows it's in Electron
+    mainWindow.webContents.executeJavaScript(
+      `document.documentElement.classList.add('electron-mac');`
+    ).catch(() => {});
   };
 
   mainWindow.webContents.on('did-finish-load', injectCSS);
