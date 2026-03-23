@@ -32,6 +32,31 @@ function createWindow() {
     mainWindow.webContents.insertCSS(`
       /* Electron macOS: safe area for traffic lights */
       :root { --electron-traffic-light: 72px; }
+
+      /* Desktop app: hide download section */
+      [class*="platforms"] {
+        display: none !important;
+      }
+
+      /* Desktop app: room name no wrap */
+      [class*="topbarRoom"] {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      /* Desktop app: smaller invite button */
+      [class*="topbarInvite"] {
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+        white-space: nowrap !important;
+      }
+
+      /* Desktop app: hide "Meet" text and dot in header logo */
+      [class*="logoMeet"],
+      [class*="logoDot"] {
+        display: none !important;
+      }
     `).catch(() => {});
     // Also set a flag so the web app knows it's in Electron
     mainWindow.webContents.executeJavaScript(
