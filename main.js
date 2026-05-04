@@ -52,10 +52,9 @@ function createWindow() {
         white-space: nowrap !important;
       }
 
-      /* Desktop app: hide "Meet" text and dot in header logo */
-      [class*="logoMeet"],
-      [class*="logoDot"] {
-        display: none !important;
+      /* Desktop app: replace full lockup with mark-only icon to save topbar space */
+      img[src="/logo.svg"] {
+        content: url('/logo-mark.svg') !important;
       }
     `).catch(() => {});
     // Also set a flag so the web app knows it's in Electron

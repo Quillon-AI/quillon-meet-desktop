@@ -1,6 +1,6 @@
 {
   "name": "quillon-meet",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Quillon Meet — video conferencing desktop app",
   "main": "main.js",
   "scripts": {
@@ -28,7 +28,9 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
         }
       ],
       "entitlements": "entitlements.mac.plist",
@@ -41,7 +43,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -54,7 +58,9 @@
     "protocols": [
       {
         "name": "Quillon Meet",
-        "schemes": ["quillonmeet"]
+        "schemes": [
+          "quillonmeet"
+        ]
       }
     ]
   },
