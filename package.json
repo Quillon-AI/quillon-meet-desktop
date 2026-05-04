@@ -1,6 +1,6 @@
 {
   "name": "quillon-meet",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Quillon Meet — video conferencing desktop app",
   "main": "main.js",
   "scripts": {
@@ -36,7 +36,9 @@
       "entitlements": "entitlements.mac.plist",
       "entitlementsInherit": "entitlements.mac.plist",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "identity": "KVILLON, OOO (TDHN55CXZH)",
+      "notarize": true
     },
     "win": {
       "icon": "icon.png",
