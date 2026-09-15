@@ -2,6 +2,13 @@ const { app, BrowserWindow, systemPreferences, session, shell } = require('elect
 const path = require('path');
 
 const APP_URL = 'https://meet.quillon.ru';
+// Вход сотрудника (SSO) уводит на страницу логина LMS и возвращает обратно с cookie
+// домена .quillon.ru — эта навигация должна остаться ВНУТРИ окна (cookie живёт в
+// defaultSession Electron), иначе она осядет в системном браузере.
+const LMS_URL = 'https://lms.quillon.ru';
+const INTERNAL_ORIGINS = [APP_URL, LMS_URL];
+// Строгое сравнение origin: `startsWith(APP_URL)` пропускал бы meet.quillon.ru.evil.com.
+const isInternal = (url) => INTERNAL_ORIGINS.some((o) => url === o || url.startsWith(o + '/') || url.startsWith(o + '?') || url.startsWith(o + '#'));
 
 let mainWindow;
 
@@ -84,9 +91,9 @@ function createWindow() {
     mainWindow.show();
   });
 
-  // Keep meet.quillon.ru links inside the app
+  // Keep meet.quillon.ru (и SSO-вход через lms.quillon.ru) inside the app
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith(APP_URL)) {
+    if (!isInternal(url)) {
       event.preventDefault();
       shell.openExternal(url);
     }
@@ -94,7 +101,7 @@ function createWindow() {
 
   // Handle window.open / target=_blank
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith(APP_URL)) {
+    if (isInternal(url)) {
       mainWindow.loadURL(url);
     } else {
       shell.openExternal(url);
